@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Draw your logo</title>
+    <style>
+        #logoTable {
+            display: none;
+        }
+
+        .logoImage {
+            width: 250px;
+            height: 250px;
+        }
+
+        #canvasContainer {
+            position: relative;
+            margin-top: 20px;
+        }
+
+        canvas {
+            border: 1px solid #000;
+            cursor: crosshair;
+        }
+    </style>
+</head>
+<body>
+    <script>
+        function getQueryParam(name) {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(name);
+        }
+
+        const prenom = getQueryParam('prenom');
+
+        document.write('<h1>Bienvenue, ' + prenom + ' !</h1>');
+
+        var logos = [
+            { nom: 'apple', image: 'logos/apple.png' },
+            { nom: 'Audi', image: 'logos/audi.png' },
+            { nom: 'Facebook', image: 'logos/facebook.png' },
+            { nom: 'Instagram', image: 'logos/instagram.png'},
+            { nom: 'LVMH', image: 'logos/lvmh.png' },
+            { nom: 'Mc Donalds', image: 'logos/mcdo.png' },
+            { nom: 'Nike', image: 'logos/nike.png' },
+            { nom: 'shell', image: 'logos/shell.png' },
+            { nom: 'TikTok', image: 'logos/tiktok.png' },
+            { nom: 'Toyota', image: 'logos/toyota.png' },
+            { nom: 'VolksWagen', image: 'logos/volkswagen.png' },
+            { nom: 'YouTube', image: 'logos/youtube.png' },
+        ];
+
+        function genererNomLogoAleatoire() {
+            var indiceAleatoire = Math.floor(Math.random() * logos.length);
+            return logos[indiceAleatoire].nom;
+        }
+
+        function initialiserDessin() {
+            var canvas = document.getElementById('canvas');
+            var context = canvas.getContext('2d');
+
+            context.clearRect(0, 0, canvas.width, canvas.height);
+
+            var dessiner = false;
+            canvas.addEventListener('mousedown', function (e) {
+                if (e.button === 0) {
+                    dessiner = true;
+                    context.beginPath();
+                    var rect = canvas.getBoundingClientRect();
+                    context.moveTo(e.clientX - rect.left, e.clientY - rect.top);
+                }
+            });
+            canvas.addEventListener('mousemove', function (e) {
+                if (dessiner) {
+                    var rect = canvas.getBoundingClientRect();
+                    context.lineTo(e.clientX - rect.left, e.clientY - rect.top);
+                    context.stroke();
+                }
+            });
+
+            canvas.addEventListener('mouseup', function () {
+                dessiner = false;
+            });
+
+            canvas.addEventListener('mouseleave', function () {
+                dessiner = false;
+            });
+        }
+
+        var table = document.createElement('table');
+        table.border = '1';
+        table.id = 'logoTable';
+
+        var thead = document.createElement('thead');
+        var headRow = thead.insertRow();
+        headRow.innerHTML = '<th>Logo</th><th>Nom du Logo</th>';
+        table.appendChild(thead);
+
+        var tbody = document.createElement('tbody');
+        logos.forEach(function (logo) {
+            var row = tbody.insertRow();
+
+            var cellImage = row.insertCell(0);
+            var image = document.createElement('img');
+            image.src = logo.image;
+            image.alt = logo.nom;
+            image.classList.add('logoImage');
+            cellImage.appendChild(image);
+
+            var cellNom = row.insertCell(1);
+            cellNom.textContent = logo.nom;
+        });
+        table.appendChild(tbody);
+
+        document.body.appendChild(table);
+
+        document.write('<p>Dessines le logo de : ' + genererNomLogoAleatoire() + '</p>');
+
+        var canvasContainer = document.createElement('div');
+        canvasContainer.id = 'canvasContainer';
+        document.body.appendChild(canvasContainer);
+
+        var canvas = document.createElement('canvas');
+        canvas.id = 'canvas';
+        canvas.width = 300;
+        canvas.height = 300;
+        canvasContainer.appendChild(canvas);
+
+        initialiserDessin();
+
+        // COMPARAISON
+
+        function comparerDessin() {
+        var canvas = document.getElementById('canvas');
+        var context = canvas.getContext('2d');
+        
+        var logoADessiner = logos.find(function (logo) {
+            return logo.nom === document.querySelector('p').textContent.split(':')[1].trim();
+        });
+
+        var imageLogo = new Image();
+        imageLogo.src = logoADessiner.image;
+
+        var canvasLogoOriginal = document.createElement('canvas');
+        canvasLogoOriginal.width = 300;
+        canvasLogoOriginal.height = 300;
+        var contextLogoOriginal = canvasLogoOriginal.getContext('2d');
+        imageLogo.onload = function () {
+            contextLogoOriginal.drawImage(imageLogo, 0, 0, 300, 300);
+
+            var imageDataDessin = context.getImageData(0, 0, canvas.width, canvas.height).data;
+            var imageDataLogoOriginal = contextLogoOriginal.getImageData(0, 0, canvas.width, canvas.height).data;
+
+            var pixelsCorrespondants = 0;
+            var tolerance = 100;
+
+            for (var i = 0; i < imageDataDessin.length; i += 4) {
+                var diff = Math.abs(imageDataDessin[i] - imageDataLogoOriginal[i]) +
+                           Math.abs(imageDataDessin[i + 1] - imageDataLogoOriginal[i + 1]) +
+                           Math.abs(imageDataDessin[i + 2] - imageDataLogoOriginal[i + 2]);
+
+                if (diff <= tolerance) {
+                    pixelsCorrespondants++;
+                }
+            }
+            var pourcentageSimilarite = (pixelsCorrespondants / (canvas.width * canvas.height / 4)) * 100;
+
+            alert('Bravo, ton dessin ressemble à ' + pourcentageSimilarite.toFixed(2) + '% à l\'original.');
+        };
+    }
+
+    var boutonValider = document.createElement('button');
+    boutonValider.textContent = 'Valider le dessin';
+    boutonValider.addEventListener('click', comparerDessin);
+    canvasContainer.appendChild(boutonValider);
+    </script>
+
+    <!-- http-server => LANCER LE SERVEUR LOCAL -->
+</body>
+</html>
