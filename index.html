@@ -1,17 +1,114 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Draw your logo</title>
+    <style>
+        @import url("https://use.typekit.net/jso0uyw.css");
+        @import url("https://use.typekit.net/jso0uyw.css");
+        body {
+            height: 70vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #008D63;
+        }
+        #cards {
+            background-color: #fffffd;
+            border-radius: 10px;
+            padding: 20px 10px 20px 10px;
+            height: 50vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-around;
+        }
+        #logo {
+            height: 200px;
+            width: 200px;
+            background-image: url('logos/logo-appli.webp');
+            background-repeat: no-repeat;
+            background-position: center;
+            background-size: contain;
+        }
+        h1 {
+            text-align: center;
+            font-size: 100px;
+            letter-spacing: 10px;
+            text-transform: uppercase;
+            font-family: "jetlab-variable", sans-serif;
+            font-weight: 200;
+            color: #E23D79;
+        }
+        .write {
+            height: 50vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-around;
+        }
+        .formulaire {
+            height: 25vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .input-name {
+            height: 8vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        #first-name {
+            font-size: 25px;
+            color: #E23D79;
+            font-family: "neulis-cursive", sans-serif;
+            font-weight: 400;
+            font-style: normal;
+        }
+        #prenom {
+            border: #E23D79 2px solid;
+            border-radius: 5px;
+            height: 3vh;
+            font-family: "neulis-cursive", sans-serif;
+            font-weight: 400;
+            font-style: normal;
+        }
+        #btn {
+            height: 5vh;
+            color: #fffffd;
+            background-color: #008D63;
+            font-size: 20px;
+            border-radius: 5px;
+            border: none;
+            font-family: "neulis-cursive", sans-serif;
+            font-weight: 700;
+            font-style: normal;
+        }
+    </style>
 </head>
 <body>
-    <h1>Bienvenue</h1>
-
-    <form action="draw.html" method="GET">
-        <label for="prenom">Prénom :</label>
-        <input type="text" id="prenom" name="prenom" required>
-        <input type="submit" value="Commencer à dessiner">
-    </form>
+    <div id="cards">
+        <div class="write">
+            <div id="logo"></div>
+            <form class="formulaire" action="draw.html" method="GET">
+                <div class="input-name">
+                    <label id="first-name" for="prenom">Enter your first name:</label>
+                    <input type="text" id="prenom" name="prenom" required>
+                </div>
+                <input id="btn" type="submit" value="Start drawing">
+            </form>
+        </div>
+    </div>
+    <script>
+        window.addEventListener('touchstart', function (e) {
+            if (e.touches.length > 1) {
+                e.preventDefault();
+            }
+        });
+        window.addEventListener('gesturestart', function (e) {
+            e.preventDefault();
+        });
+    </script>
 </body>
 </html>

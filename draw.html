@@ -2,31 +2,72 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Draw your logo</title>
     <style>
+        @import url("https://use.typekit.net/jso0uyw.css");
+        @import url("https://use.typekit.net/jso0uyw.css");
+        body {
+            height: 100vh;
+            overflow-y: hidden;
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            -webkit-overflow-scrolling: touch;
+        }
         #logoTable {
             display: none;
         }
 
         .logoImage {
-            width: 250px;
-            height: 250px;
+            margin-top: 20px;
+            width: 50px;
+            height: auto;
         }
 
         #canvasContainer {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-evenly;
             position: relative;
-            margin-top: 20px;
+            overflow-y: hidden;
         }
 
         canvas {
-            border: 1px solid #000;
+            border: 2px solid #008D63;
+            border-radius: 5px;
             cursor: crosshair;
+            max-width: 90%;
+            max-height: 90%;
+        }
+        h1 {
+            text-align: center;
+            font-size: 25px;
+            font-family: "neulis-cursive", sans-serif;
+            font-weight: 200;
+            color: #E23D79;
+        }
+        p {
+            font-size: 20px;
+            font-family: "neulis-cursive", sans-serif;
+            font-weight: 200;
+            color: #008D63;
         }
     </style>
 </head>
 <body>
     <script>
+        window.addEventListener('touchstart', function (e) {
+            if (e.touches.length > 1) {
+                e.preventDefault();
+            }
+        });
+        window.addEventListener('gesturestart', function (e) {
+            e.preventDefault();
+        });
+
         function getQueryParam(name) {
             const urlParams = new URLSearchParams(window.location.search);
             return urlParams.get(name);
@@ -34,7 +75,9 @@
 
         const prenom = getQueryParam('prenom');
 
-        document.write('<h1>Bienvenue, ' + prenom + ' !</h1>');
+        var dessinAutorise = true;
+
+        document.write('<h1>Welcome, ' + prenom + ' !</h1>');
 
         var logos = [
             { nom: 'apple', image: 'logos/apple.png' },
@@ -63,28 +106,52 @@
             context.clearRect(0, 0, canvas.width, canvas.height);
 
             var dessiner = false;
-            canvas.addEventListener('mousedown', function (e) {
-                if (e.button === 0) {
-                    dessiner = true;
-                    context.beginPath();
-                    var rect = canvas.getBoundingClientRect();
-                    context.moveTo(e.clientX - rect.left, e.clientY - rect.top);
-                }
-            });
-            canvas.addEventListener('mousemove', function (e) {
-                if (dessiner) {
-                    var rect = canvas.getBoundingClientRect();
-                    context.lineTo(e.clientX - rect.left, e.clientY - rect.top);
-                    context.stroke();
+
+            function startPosition(e) {
+                dessiner = true;
+                draw(e);
+            }
+
+            function endPosition() {
+                dessiner = false;
+                context.beginPath();
+            }
+
+            function draw(e) {
+                if (!dessiner) return;
+
+                var rect = canvas.getBoundingClientRect();
+                var x = e.clientX - rect.left;
+                var y = e.clientY - rect.top;
+
+                context.lineTo(x, y);
+                context.stroke();
+                context.beginPath();
+                context.moveTo(x, y);
+            }
+            
+            canvas.addEventListener('touchstart', function (e) {
+                if (dessinAutorise) {
+                    startPosition(e.touches[0]);
                 }
             });
 
-            canvas.addEventListener('mouseup', function () {
-                dessiner = false;
+            canvas.addEventListener('touchmove', function (e) {
+                if (dessinAutorise) {
+                    draw(e.touches[0]);
+                }
             });
 
-            canvas.addEventListener('mouseleave', function () {
-                dessiner = false;
+            canvas.addEventListener('touchend', function () {
+                if (dessinAutorise) {
+                    endPosition();
+                }
+            });
+
+            canvas.addEventListener('touchcancel', function () {
+                if (dessinAutorise) {
+                    endPosition();
+                }
             });
         }
 
@@ -115,7 +182,7 @@
 
         document.body.appendChild(table);
 
-        document.write('<p>Dessines le logo de : ' + genererNomLogoAleatoire() + '</p>');
+        document.write('<p>Draw the logo of: ' + genererNomLogoAleatoire() + '</p>');
 
         var canvasContainer = document.createElement('div');
         canvasContainer.id = 'canvasContainer';
@@ -129,53 +196,91 @@
 
         initialiserDessin();
 
-        // COMPARAISON
-
         function comparerDessin() {
-        var canvas = document.getElementById('canvas');
-        var context = canvas.getContext('2d');
-        
-        var logoADessiner = logos.find(function (logo) {
-            return logo.nom === document.querySelector('p').textContent.split(':')[1].trim();
-        });
+            var canvas = document.getElementById('canvas');
+            var context = canvas.getContext('2d');
 
-        var imageLogo = new Image();
-        imageLogo.src = logoADessiner.image;
+            var logoADessiner = logos.find(function (logo) {
+                return logo.nom === document.querySelector('p').textContent.split(':')[1].trim();
+            });
 
-        var canvasLogoOriginal = document.createElement('canvas');
-        canvasLogoOriginal.width = 300;
-        canvasLogoOriginal.height = 300;
-        var contextLogoOriginal = canvasLogoOriginal.getContext('2d');
-        imageLogo.onload = function () {
-            contextLogoOriginal.drawImage(imageLogo, 0, 0, 300, 300);
+            var imageLogo = new Image();
+            imageLogo.src = logoADessiner.image;
 
-            var imageDataDessin = context.getImageData(0, 0, canvas.width, canvas.height).data;
-            var imageDataLogoOriginal = contextLogoOriginal.getImageData(0, 0, canvas.width, canvas.height).data;
+            var canvasLogoOriginal = document.createElement('canvas');
+            canvasLogoOriginal.width = canvas.width;
+            canvasLogoOriginal.height = canvas.height;
+            var contextLogoOriginal = canvasLogoOriginal.getContext('2d');
 
-            var pixelsCorrespondants = 0;
-            var tolerance = 100;
+            imageLogo.onload = function () {
+                contextLogoOriginal.drawImage(imageLogo, 0, 0, 300, 300);
 
-            for (var i = 0; i < imageDataDessin.length; i += 4) {
-                var diff = Math.abs(imageDataDessin[i] - imageDataLogoOriginal[i]) +
-                           Math.abs(imageDataDessin[i + 1] - imageDataLogoOriginal[i + 1]) +
-                           Math.abs(imageDataDessin[i + 2] - imageDataLogoOriginal[i + 2]);
+                var imageDataDessin = context.getImageData(0, 0, canvas.width, canvas.height).data;
+                var imageDataLogoOriginal = contextLogoOriginal.getImageData(0, 0, canvas.width, canvas.height).data;
 
-                if (diff <= tolerance) {
-                    pixelsCorrespondants++;
+                var pixelsCorrespondants = 0;
+                var tolerance = 80;
+
+                for (var i = 0; i < imageDataDessin.length; i += 4) {
+                    var diff = Math.abs(imageDataDessin[i] - imageDataLogoOriginal[i]) +
+                            Math.abs(imageDataDessin[i + 1] - imageDataLogoOriginal[i + 1]) +
+                            Math.abs(imageDataDessin[i + 2] - imageDataLogoOriginal[i + 2]);
+
+                    if (diff <= tolerance) {
+                        pixelsCorrespondants++;
+                    }
                 }
-            }
-            var pourcentageSimilarite = (pixelsCorrespondants / (canvas.width * canvas.height / 4)) * 100;
 
-            alert('Bravo, ton dessin ressemble à ' + pourcentageSimilarite.toFixed(2) + '% à l\'original.');
-        };
-    }
+                var pourcentageSimilarite = (pixelsCorrespondants / (canvas.width * canvas.height / 4)) * 10;
 
-    var boutonValider = document.createElement('button');
-    boutonValider.textContent = 'Valider le dessin';
-    boutonValider.addEventListener('click', comparerDessin);
-    canvasContainer.appendChild(boutonValider);
+                var isDessinVide = true;
+
+                for (var i = 0; i < imageDataDessin.length; i += 4) {
+                    if (imageDataDessin[i + 3] !== 0) {
+                        isDessinVide = false;
+                        break;
+                    }
+                }
+
+                if (isDessinVide) {
+                    pourcentageSimilarite = 0;
+                }
+
+                var resultatContainer = document.getElementById('resultatContainer');
+                resultatContainer.innerHTML = '';
+                var imageResultat = document.createElement('img');
+                imageResultat.src = logoADessiner.image;
+                imageResultat.alt = logoADessiner.nom;
+                imageResultat.classList.add('logoImage');
+                resultatContainer.appendChild(imageResultat);
+                resultatContainer.innerHTML += '<p>Result : ' + pourcentageSimilarite.toFixed(2) + '% similarity.</p>';
+
+                resultatContainer.style.display = 'block';
+            };
+        }
+
+        var topBar = document.getElementById('topBar');
+
+        setTimeout(function () {
+            topBar.style.width = '0';
+        }, 0);
+
+        setTimeout(function () {
+            dessinAutorise = false;
+            comparerDessin();
+        }, 15000);
+
+        var topBar = document.createElement('div');
+        topBar.id = 'topBar';
+        topBar.style.height = '5px';
+        topBar.style.width = '100%';
+        topBar.style.backgroundColor = '#E23D79';
+        topBar.style.transition = 'width 15s linear';
+
+        var canvasContainer = document.getElementById('canvasContainer');
+        document.body.insertBefore(topBar, canvasContainer.nextSibling);
     </script>
-
-    <!-- http-server => LANCER LE SERVEUR LOCAL -->
+    <div id="resultatContainer" style="display: none;"></div>
+    <script src="./node_modules/pixelmatch/index.js"></script>
 </body>
 </html>
